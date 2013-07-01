@@ -1,0 +1,57 @@
+# CS-750 Assignment 3
+# Eliot Friedman (Team 2)
+
+require 'csv'
+require 'yaml'
+require_relative 'student'
+require_relative 'course'
+
+# Create and populate the course catalog
+course_catalog = []
+course_catalog[0] = Course.new('Basket Weaving', 101)
+course_catalog[1]= Course.new('Physics For Poets', 102)
+course_catalog[2]= Course.new('Intermediate Light', 103)
+course_catalog[3]= Course.new('Poetry For Physicists', 104)
+
+# Read in the CSV file, getting column headers from the first row
+student_csv = CSV.read("./students.csv", :headers=>true)
+
+# Initialize some student globals
+student_array = []
+unique_student_id = 1
+
+# Populate the student array
+
+student_csv.each do |row|
+  new_student = Student.new do |student|
+    student.first_name = row["GivenName"]
+    student.last_name= row["Surname"]
+    student.city= row["City"]
+    student.state=row["State"]
+    student.email=row["EmailAddress"]
+    student.gender=row["Gender"]
+    student.pounds=row["Pounds"]
+    student.student_id= unique_student_id
+    unique_student_id += 1
+    # GPA falls between 2 and 4, so add a random float between 0 and 2 to 2
+    student.gpa= 2 + rand(0)*2
+    student_program = []
+    for i in 0..3
+      # Each course has a 25% chance of being taken by any particular student
+      student_program.push course_catalog[i] if rand(0) < 0.25
+    end
+    student.taking_courses = student_program
+  end
+  student_array.push new_student
+end
+
+# Serialize the student array into a YAML object
+yaml_obj = YAML::dump(student_array)
+
+# And write it out to an appropriately-named file
+File.open('university_db.yml', "w+") do |file|
+  file.puts yaml_obj
+end
+
+
+
